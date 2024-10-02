@@ -22,8 +22,8 @@
     />
     <div v-if="isAnswersVisible" class="answers">
       <SimpleButton
-        v-if="examplesList"
-        v-for="(answer, i) in examplesList[0].answers"
+        v-if="unsolvedExamples"
+        v-for="(answer, i) in unsolvedExamples[0].answers"
         :key="i"
         class="m-t-16"
         :text="answer"
@@ -42,9 +42,11 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/firebaseConfig";
 
 import ChatMessage from "@/components/ChatMessage.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import SimpleButton from "@/components/SimpleButton.vue";
 
 import { useExamplesStore } from "@/stores/examples";
@@ -61,9 +63,16 @@ const messages = ref<string[]>([
   "Начнем?",
 ]);
 
-// const examples = ref<string[]>(["25 + 30"]);
+type Example = {
+  id: string; // ID примера, строка
+  example: string; // Текст примера
+  answers: number[]; // Возможные ответы
+  rightAnswer: number; // Правильный ответ
+};
+
+const examplesList = ref<Example[] | undefined>([]);
+
 const isShowingMessages = ref(false);
-const examplesList = ref<any[] | undefined>([]);
 const displayedMessages = ref<string[]>([]);
 const showingButtons = ref<boolean>(false);
 const isGreeting = ref<boolean>(true);
@@ -71,9 +80,16 @@ const isAnswersVisible = ref<boolean>(false);
 const isCorrectAnswer = ref<boolean>(false);
 const isWrongAnswer = ref<boolean>(false);
 
+const unsolvedExamples = computed(() => {
+  return examplesList.value?.filter(
+    (example) => !userData.value?.solved_examples.includes(example.id)
+  );
+});
+
 const showMessages = () => {
   if (isShowingMessages.value) return;
   isShowingMessages.value = true;
+
   if (isGreeting.value) {
     let index = 0;
     const interval = setInterval(() => {
@@ -89,13 +105,14 @@ const showMessages = () => {
   } else {
     displayedMessages.value = [];
     setTimeout(() => {
-      if (examplesList.value) {
-        displayedMessages.value.push(examplesList.value[0].example);
+      if (unsolvedExamples.value && unsolvedExamples.value.length > 0) {
+        displayedMessages.value.push(unsolvedExamples.value[0].example);
         setTimeout(() => {
           isAnswersVisible.value = true;
         }, 2000);
         isShowingMessages.value = false;
       } else {
+        displayedMessages.value.push("Все примеры решены!");
         isShowingMessages.value = false;
       }
     }, 2000);
@@ -119,11 +136,44 @@ const giveAnswer = (answer: number) => {
     setTimeout(() => {
       isCorrectAnswer.value = false;
       isAnswersVisible.value = false;
+      solveExample();
       showMessages();
     }, 2000);
   } else {
     userStore.addScores(-5);
     isWrongAnswer.value = true;
+  }
+};
+
+const solveExample = async () => {
+  try {
+    if (!userData.value) {
+      throw new Error("User is not logged in");
+    }
+
+    const currentExampleId = examplesList.value![0].id;
+    const userDocRef = doc(db, "users", auth.currentUser?.uid as string);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const currentData = userDoc.data();
+      const solvedExamples = currentData.solved_examples || [];
+
+      if (!solvedExamples.includes(currentExampleId)) {
+        solvedExamples.push(currentExampleId);
+        await setDoc(userDocRef, { solved_examples: solvedExamples }, { merge: true });
+
+        console.log(`Example ${currentExampleId} added to solved_examples.`);
+      } else {
+        console.log(`Example ${currentExampleId} has already been solved.`);
+      }
+
+      userData.value = { ...userData.value, solved_examples: solvedExamples };
+    } else {
+      console.error("User document does not exist.");
+    }
+  } catch (error) {
+    console.error("Error solving example:", error);
   }
 };
 </script>

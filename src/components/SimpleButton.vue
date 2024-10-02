@@ -5,7 +5,7 @@
 <script setup lang="ts">
 const props = defineProps({
   text: {
-    type: String,
+    type: [String, Number],
     default: "",
   },
 });

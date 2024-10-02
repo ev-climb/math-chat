@@ -23,10 +23,17 @@ const name = ref("");
 const email = ref("");
 const scores = ref(0);
 const password = ref("");
+const solved_examples = ref([]);
 const userStore = useUserStore();
 const { loading } = storeToRefs(userStore);
 
 const handleSignUp = async () => {
-  await userStore.signUp(name.value, email.value, password.value, scores.value);
+  await userStore.signUp(
+    name.value,
+    email.value,
+    password.value,
+    scores.value,
+    solved_examples.value
+  );
 };
 </script>

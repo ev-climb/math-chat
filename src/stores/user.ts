@@ -7,7 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import router from '@/router';
 
 export const useUserStore = defineStore('user', () => {
-  const userData = ref<{ name: string; email?: string; scores?: number; } | null>(null);
+  const userData = ref<{ name: string; email?: string; scores?: number; solved_examples: string[] } | null>(null);
   const loading = ref(false);
 
   const getUserData = async (uid: string) => {
@@ -15,19 +15,19 @@ export const useUserStore = defineStore('user', () => {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      userData.value = docSnap.data() as { name: string; email: string; scores: number };
+      userData.value = docSnap.data() as { name: string; email: string; scores: number; solved_examples: string[] };
     } else {
       console.error("No such document!");
     }
   };
 
-  const signUp = async (name: string, email: string, password: string, scores: number) => {
+  const signUp = async (name: string, email: string, password: string, scores: number, solved_examples: string[]) => {
     try {
       loading.value = true;
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      await setDoc(doc(db, "users", user.uid), { name, email, scores });
-      userData.value = { name, email, scores };
+      await setDoc(doc(db, "users", user.uid), { name, email, scores, solved_examples });
+      userData.value = { name, email, scores, solved_examples };
       router.push('/');
     } catch (error) {
       console.error("Error during sign-up:", error);
@@ -55,8 +55,7 @@ export const useUserStore = defineStore('user', () => {
       if (!userData.value) {
         throw new Error("User is not logged in");
       }
-  
-      // loading.value = true;
+
       const userDocRef = doc(db, "users", auth.currentUser?.uid as string);
       const userDoc = await getDoc(userDocRef);
       
@@ -75,9 +74,7 @@ export const useUserStore = defineStore('user', () => {
   
     } catch (error) {
       console.error("Error adding scores:", error);
-    } finally {
-      // loading.value = false;
-    }
+    } 
   };
   
 
