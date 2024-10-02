@@ -1,0 +1,54 @@
+@import './lib.css';
+
+
+body {
+  background: rgb(221, 246, 250);
+  margin: 0;
+}
+
+#app {
+  position: relative;
+  max-width: 370px;
+  margin: 0 auto;
+  padding: 6rem 2rem 2rem;
+  font-weight: normal;
+  display: flex;
+  justify-content: center;
+  font-family:'Courier New', Courier, monospace;
+}
+
+a {
+  text-decoration: none;
+  color: #3498db
+}
+
+h1,h2,p {
+  color: #565656;
+  margin: 0;
+}
+
+.chat-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 16px;
+  height: 70vh;
+}
+
+.chat-container > * {
+  opacity: 0;
+  animation: fadeInUp 0.4s forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
