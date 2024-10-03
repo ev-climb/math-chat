@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, writeBatch } from "firebase/firestore";
 import { db } from '@/firebaseConfig';
 
 export const useExamplesStore = defineStore("examples", () => {
@@ -26,9 +26,26 @@ export const useExamplesStore = defineStore("examples", () => {
     }
   };
 
+  const uploadExamples = async (examples: any[], level: number) => {
+    const batch = writeBatch(db);
+  
+    examples.forEach((exampleData) => {
+      const newExampleRef = doc(collection(db, `examples/${level}/problems`));
+      batch.set(newExampleRef, exampleData);
+    });
+
+    try {
+      await batch.commit();
+      console.log("Все примеры успешно загружены!");
+    } catch (error) {
+      console.error("Ошибка при загрузке примеров:", error);
+    }
+  };
+
   return {
     examplesList,
     loading,
     fetchExamples,
+    uploadExamples
   };
 });

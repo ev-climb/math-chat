@@ -36,9 +36,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 
 import { useUserStore } from "@/stores/user";
+import { useExamplesStore } from "@/stores/examples";
 import { storeToRefs } from "pinia";
 import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
 
@@ -48,6 +49,7 @@ import SimpleButton from "@/components/SimpleButton.vue";
 import SimpleInput from "@/components/SimpleInput.vue";
 
 const userStore = useUserStore();
+const examplesStore = useExamplesStore();
 const { userData } = storeToRefs(userStore);
 const logOut = userStore.logOut;
 const db = getFirestore();
@@ -91,6 +93,26 @@ const addExample = async () => {
     alert("Ошибка при добавлении примера.");
   }
 };
+
+// Для добавления примеров
+// const examples = reactive([
+//   {
+//     example: "5 + 3",
+//     answers: [6, 7, 8, 9, 10, 5],
+//     rightAnswer: 8,
+//   },
+
+// ]);
+// const addExamples = async () => {
+//   try {
+//     await examplesStore.uploadExamples(examples, 1);
+//     alert("Примеры успешно добавлены!");
+//   } catch (error) {
+//     console.error("Ошибка при добавлении примеров:", error);
+//     alert("Ошибка при добавлении примеров.");
+//   }
+// };
+// addExamples();
 </script>
 
 <style scoped>
