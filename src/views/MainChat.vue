@@ -64,10 +64,10 @@ const messages = ref<string[]>([
 ]);
 
 type Example = {
-  id: string; // ID примера, строка
-  example: string; // Текст примера
-  answers: number[]; // Возможные ответы
-  rightAnswer: number; // Правильный ответ
+  id: string;
+  example: string;
+  answers: number[];
+  rightAnswer: number;
 };
 
 const examplesList = ref<Example[] | undefined>([]);
@@ -130,7 +130,7 @@ const letsGo = () => {
 };
 
 const giveAnswer = (answer: number) => {
-  if (examplesList.value && examplesList.value[0].rightAnswer == answer) {
+  if (unsolvedExamples.value && unsolvedExamples.value[0].rightAnswer == answer) {
     userStore.addScores(5);
     isCorrectAnswer.value = true;
     setTimeout(() => {
@@ -151,7 +151,9 @@ const solveExample = async () => {
       throw new Error("User is not logged in");
     }
 
-    const currentExampleId = examplesList.value![0].id;
+    const currentExampleId = unsolvedExamples.value?.[0].id;
+    if (!currentExampleId) return;
+
     const userDocRef = doc(db, "users", auth.currentUser?.uid as string);
     const userDoc = await getDoc(userDocRef);
 
@@ -160,15 +162,25 @@ const solveExample = async () => {
       const solvedExamples = currentData.solved_examples || [];
 
       if (!solvedExamples.includes(currentExampleId)) {
+        // Добавляем пример в решенные
         solvedExamples.push(currentExampleId);
         await setDoc(userDocRef, { solved_examples: solvedExamples }, { merge: true });
 
         console.log(`Example ${currentExampleId} added to solved_examples.`);
+
+        // Обновляем данные пользователя
+        userData.value = { ...userData.value, solved_examples: solvedExamples };
+
+        // Удаляем решенный пример из списка
+        examplesList.value = examplesList.value?.filter(
+          (example) => example.id !== currentExampleId
+        );
+
+        // Загружаем следующий пример
+        showMessages();
       } else {
         console.log(`Example ${currentExampleId} has already been solved.`);
       }
-
-      userData.value = { ...userData.value, solved_examples: solvedExamples };
     } else {
       console.error("User document does not exist.");
     }

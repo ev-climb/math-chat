@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 
@@ -13,8 +13,26 @@ const userStore = useUserStore();
 const { userData } = storeToRefs(userStore);
 
 const max = ref(1000);
+const barColor = ref("#bee1ff");
 const currentScores = computed(() => userData.value?.scores || 0);
 const calculatedWidth = computed(() => (currentScores.value / max.value) * 100);
+
+const updateProgressBar = (isCorrect: boolean) => {
+  if (isCorrect) {
+    barColor.value = "#4caf50";
+  } else {
+    barColor.value = "#f44336";
+  }
+
+  setTimeout(() => {
+    barColor.value = "#bee1ff"; // Возвращаем исходный цвет
+  }, 1000);
+};
+
+watch(currentScores, (newScore, oldScore) => {
+  const isCorrect = newScore > oldScore;
+  updateProgressBar(isCorrect);
+});
 </script>
 
 <style scoped>
