@@ -31,10 +31,18 @@
       />
     </div>
   </div>
-  <SimplePopup v-if="isCorrectAnswer" v-model:state="isCorrectAnswer">
+  <SimplePopup
+    v-if="isCorrectAnswer"
+    v-model:state="isCorrectAnswer"
+    overlayRgba="rgb(72 237 69 / 37%)"
+  >
     Правильный ответ!
   </SimplePopup>
-  <SimplePopup v-if="isWrongAnswer" v-model:state="isWrongAnswer">
+  <SimplePopup
+    v-if="isWrongAnswer"
+    v-model:state="isWrongAnswer"
+    overlayRgba="rgb(231 99 99 / 37%)"
+  >
     Попробуй еще разок!
   </SimplePopup>
 </template>

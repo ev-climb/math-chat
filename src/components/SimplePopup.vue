@@ -1,5 +1,5 @@
 <template>
-  <div class="overlay" @click.self="closePopup">
+  <div class="overlay" :style="{ background: `${background}` }" @click.self="closePopup">
     <SimpleCard>
       <slot></slot>
     </SimpleCard>
@@ -7,15 +7,20 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
 import SimpleCard from "./SimpleCard.vue";
 
 const props = defineProps({
   state: Boolean,
+  overlayRgba: {
+    type: String,
+    default: "rgba(0, 0, 0, 0.363)",
+  },
 });
 
 const emit = defineEmits(["update:state"]);
+const background = ref("rgba(0, 0, 0, 0)");
 
 const closePopup = () => {
   emit("update:state", false);
@@ -28,8 +33,11 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener("keydown", handleKeydown);
+  setTimeout(() => {
+    background.value = props.overlayRgba; // Плавно изменяем цвет после задержки
+  }, 10);
 });
 
 onBeforeUnmount(() => {
@@ -47,6 +55,7 @@ onBeforeUnmount(() => {
   align-items: center;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.363);
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease-in;
 }
 </style>
