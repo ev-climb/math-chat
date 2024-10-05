@@ -162,21 +162,15 @@ const solveExample = async () => {
       const solvedExamples = currentData.solved_examples || [];
 
       if (!solvedExamples.includes(currentExampleId)) {
-        // Добавляем пример в решенные
         solvedExamples.push(currentExampleId);
         await setDoc(userDocRef, { solved_examples: solvedExamples }, { merge: true });
 
         console.log(`Example ${currentExampleId} added to solved_examples.`);
 
-        // Обновляем данные пользователя
         userData.value = { ...userData.value, solved_examples: solvedExamples };
-
-        // Удаляем решенный пример из списка
         examplesList.value = examplesList.value?.filter(
           (example) => example.id !== currentExampleId
         );
-
-        // Загружаем следующий пример
         showMessages();
       } else {
         console.log(`Example ${currentExampleId} has already been solved.`);

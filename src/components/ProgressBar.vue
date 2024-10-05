@@ -3,6 +3,7 @@
     class="progress"
     :style="{
       height: `${barHeight}px`,
+      width: `${barWidth}%`,
     }"
   >
     <div
@@ -32,21 +33,25 @@ const barColor = ref("#bee1ff");
 
 const defaultBarHeight = 30;
 const barHeight = ref(defaultBarHeight);
+const defaultBarWidth = 50;
+const barWidth = ref(defaultBarWidth);
 
 const updateProgressBar = (isCorrect: boolean) => {
   if (isCorrect) {
     barColor.value = "#4caf50";
-
+  } else {
     barColor.value = "#f44336";
   }
 
   barHeight.value = defaultBarHeight * 1.3;
+  barWidth.value = defaultBarWidth * 1.1;
 
   // Через 1 секунду вернем цвет и высоту по умолчанию
   setTimeout(() => {
     barColor.value = "#bee1ff";
     barHeight.value = defaultBarHeight;
-  }, 1000);
+    barWidth.value = defaultBarWidth;
+  }, 1500);
 };
 
 watch(currentScores, (newScore, oldScore) => {
@@ -62,15 +67,14 @@ watch(currentScores, (newScore, oldScore) => {
   height: 30px;
   border-radius: 20px;
   background: #f9f9f970;
-  transition: height 0.8s ease-in-out;
+  transition: height 1s ease-in-out, width 1s ease-in-out;
 }
 
 .bar {
   border-radius: 20px;
   width: 0%;
   height: 100%;
-  transition: width 1s ease-in-out, background-color 0.6s ease-in-out,
-    height 0.8s ease-in-out;
+  transition: width 1s ease-in-out, background-color 1s ease-in-out, height 1s ease-in-out;
 }
 
 .shadow {
