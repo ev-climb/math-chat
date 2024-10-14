@@ -1,21 +1,28 @@
 <template>
-  <div class="overlay" :style="{ background: `${background}` }" @click.self="closePopup">
-    <SimpleCard>
-      <slot></slot>
-    </SimpleCard>
-  </div>
+  <!-- Используем v-if для управления видимостью попапа -->
+  <transition name="fade">
+    <div
+      v-if="state"
+      class="overlay"
+      :style="{ background: `${background}` }"
+      @click.self="closePopup"
+    >
+      <SimpleCard>
+        <slot></slot>
+      </SimpleCard>
+    </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-
 import SimpleCard from "./SimpleCard.vue";
 
 const props = defineProps({
-  state: Boolean,
+  state: Boolean, // состояние видимости попапа
   overlayRgba: {
     type: String,
-    default: "rgba(0, 0, 0, 0.363)",
+    default: "rgba(0, 0, 0, 0.363)", // цвет фона
   },
 });
 
@@ -33,11 +40,12 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 };
 
-onMounted(async () => {
+onMounted(() => {
   window.addEventListener("keydown", handleKeydown);
+
   setTimeout(() => {
-    background.value = props.overlayRgba; // Плавно изменяем цвет после задержки
-  }, 10);
+    background.value = props.overlayRgba; // Плавное изменение цвета фона
+  }, 10); // Задержка для анимации
 });
 
 onBeforeUnmount(() => {
@@ -56,6 +64,18 @@ onBeforeUnmount(() => {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0);
-  transition: background 0.3s ease-in;
+  transition: background 1s ease-in;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease;
+  /* Плавное изменение прозрачности */
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  /* Начальная и конечная прозрачность */
 }
 </style>

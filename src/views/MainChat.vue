@@ -1,48 +1,21 @@
 <template>
   <div v-if="isGreeting" class="chat-container">
     <ChatMessage :text="`Привет, ${userData?.name}!`" />
-    <ChatMessage
-      v-for="(message, index) in displayedMessages"
-      :key="index"
-      :text="message"
-    />
-    <SimpleButton
-      v-if="showingButtons"
-      class="m-t-16"
-      text="Погнали!"
-      @click="letsGo()"
-    />
+    <ChatMessage v-for="(message, index) in displayedMessages" :key="index" :text="message" />
+    <SimpleButton v-if="showingButtons" class="m-t-16" @click="letsGo()">Погнали!</SimpleButton>
   </div>
   <div v-else class="chat-container">
     <ChatMessage text="Помоги решить такой пример:" />
-    <ChatMessage
-      v-for="(message, index) in displayedMessages"
-      :key="index"
-      :text="message"
-    />
+    <ChatMessage v-for="(message, index) in displayedMessages" :key="index" :text="message" />
     <div v-if="isAnswersVisible" class="answers">
-      <SimpleButton
-        v-if="unsolvedExamples"
-        v-for="(answer, i) in unsolvedExamples[0].answers"
-        :key="i"
-        class="m-t-16"
-        :text="answer"
-        @click="() => giveAnswer(answer)"
-      />
+      <SimpleButton v-if="unsolvedExamples" v-for="(answer, i) in unsolvedExamples[0].answers" :key="i" class="m-t-16"
+        @click="() => giveAnswer(answer)">{{ answer }}</SimpleButton>
     </div>
   </div>
-  <SimplePopup
-    v-if="isCorrectAnswer"
-    v-model:state="isCorrectAnswer"
-    overlayRgba="rgb(72 237 69 / 37%)"
-  >
+  <SimplePopup v-if="isCorrectAnswer" v-model:state="isCorrectAnswer" overlayRgba="rgb(72 237 69 / 37%)">
     Правильный ответ!
   </SimplePopup>
-  <SimplePopup
-    v-if="isWrongAnswer"
-    v-model:state="isWrongAnswer"
-    overlayRgba="rgb(231 99 99 / 37%)"
-  >
+  <SimplePopup v-if="isWrongAnswer" v-model:state="isWrongAnswer" overlayRgba="rgb(231 99 99 / 37%)">
     Попробуй еще разок!
   </SimplePopup>
 </template>

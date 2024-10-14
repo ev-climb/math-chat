@@ -12,24 +12,15 @@
     </router-link>
     <SimplePopup v-if="settingsOpened" v-model:state="settingsOpened">
       <div v-if="exampleOpened" class="flex column gap-16">
-        <SimpleInput
-          label="Уровень"
-          type="select"
-          v-model="selectedLevel"
-          :options="['1', '2', '3', '4', '5']"
-        />
+        <SimpleInput label="Уровень" type="select" v-model="selectedLevel" :options="['1', '2', '3', '4', '5']" />
         <SimpleInput label="Пример" placeholder="35 + 43" v-model="example" />
-        <SimpleInput
-          label="Варианты ответов"
-          placeholder="25,78,65,70,44,79"
-          v-model="answers"
-        />
+        <SimpleInput label="Варианты ответов" placeholder="25,78,65,70,44,79" v-model="answers" />
         <SimpleInput label="Правильный ответ" placeholder="78" v-model="rightAnswer" />
-        <SimpleButton text="Добавить" @click="addExample" />
+        <SimpleButton @click="addExample">Добавить</SimpleButton>
       </div>
       <div v-else class="flex column gap-16">
-        <SimpleButton text="Добавить примеры" @click="addingExamplesOpen" />
-        <SimpleButton text="Выход" @click="logOut" />
+        <SimpleButton @click="addingExamplesOpen">Добавить примеры</SimpleButton>
+        <SimpleButton @click="logOut">Выход</SimpleButton>
       </div>
     </SimplePopup>
   </div>

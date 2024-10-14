@@ -4,7 +4,7 @@
   <SimpleCard v-else title="Вход">
     <SimpleInput v-model="email" type="email" placeholder="Почта" id="email" />
     <SimpleInput v-model="password" type="password" placeholder="Пароль" id="password" />
-    <SimpleButton text="Войти" @click="handleSignIn" />
+    <SimpleButton @click="handleSignIn">Войти</SimpleButton>
     <router-link to="/sign-up" style="margin-left: 20px">Регистрация</router-link>
   </SimpleCard>
 </template>

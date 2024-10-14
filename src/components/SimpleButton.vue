@@ -1,15 +1,10 @@
 <template>
-  <button type="button" @click.prevent="$emit('click')">{{ text }}</button>
+  <button type="button" @click.prevent="$emit('click')">
+    <slot></slot>
+  </button>
 </template>
 
-<script setup lang="ts">
-const props = defineProps({
-  text: {
-    type: [String, Number],
-    default: "",
-  },
-});
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 button {

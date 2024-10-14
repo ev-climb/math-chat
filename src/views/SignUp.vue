@@ -5,7 +5,7 @@
     <SimpleInput v-model="name" type="text" placeholder="Имя" id="name" />
     <SimpleInput v-model="email" type="email" placeholder="Почта" id="email" />
     <SimpleInput v-model="password" type="password" placeholder="Пароль" id="password" />
-    <SimpleButton text="Зарегистрироваться" @click="handleSignUp" />
+    <SimpleButton @click="handleSignUp">Зарегистрироваться</SimpleButton>
     <p class="m-t-32 text-center"><router-link to="/sign-in">Вход</router-link></p>
   </SimpleCard>
 </template>
