@@ -1,23 +1,50 @@
 <template>
   <div v-if="isGreeting" class="chat-container">
     <ChatMessage :text="`Привет, ${userData?.name}!`" />
-    <ChatMessage v-for="(message, index) in displayedMessages" :key="index" :text="message" />
-    <SimpleButton v-if="showingButtons" class="m-t-16" @click="letsGo()">Погнали!</SimpleButton>
+    <ChatMessage
+      v-for="(message, index) in displayedMessages"
+      :key="index"
+      :text="message"
+    />
+    <SimpleButton v-if="showingButtons" class="m-t-16" @click="letsGo()"
+      >Погнали!</SimpleButton
+    >
   </div>
-  <div v-else class="chat-container">
-    <ChatMessage text="Помоги решить такой пример:" />
-    <ChatMessage v-for="(message, index) in displayedMessages" :key="index" :text="message" />
-    <div v-if="isAnswersVisible" class="answers">
-      <SimpleButton v-if="unsolvedExamples" v-for="(answer, i) in unsolvedExamples[0].answers" :key="i" class="m-t-16"
-        @click="() => giveAnswer(answer)">{{ answer }}</SimpleButton>
+  <div
+    v-else
+    :class="[
+      'chat-container',
+      { 'chat-container__width-answers': isAnswersVisible && !isInputPanelClosing },
+    ]"
+  >
+    <ChatMessage text="Помоги решить такой пример:" @click="closeInputPanel()" />
+    <ChatMessage
+      v-for="(message, index) in displayedMessages"
+      :key="index"
+      :text="message"
+    />
+  </div>
+  <div
+    v-if="isAnswersVisible"
+    :class="isInputPanelClosing ? 'input-panel input-panel__vanish' : 'input-panel'"
+  >
+    <div class="answers">
+      <SimpleButton
+        v-if="unsolvedExamples"
+        v-for="(answer, i) in unsolvedExamples[0].answers"
+        :key="i"
+        class="m-t-16"
+        @click="() => giveAnswer(answer)"
+        >{{ answer }}</SimpleButton
+      >
     </div>
   </div>
-  <SimplePopup v-if="isCorrectAnswer" v-model:state="isCorrectAnswer" overlayRgba="rgb(72 237 69 / 37%)">
+  <!-- <SimplePopup v-if="isCorrectAnswer" v-model:state="isCorrectAnswer" overlayRgba="rgb(72 237 69 / 37%)">
     Правильный ответ!
   </SimplePopup>
   <SimplePopup v-if="isWrongAnswer" v-model:state="isWrongAnswer" overlayRgba="rgb(231 99 99 / 37%)">
     Попробуй еще разок!
-  </SimplePopup>
+  </SimplePopup> -->
 </template>
 
 <script setup lang="ts">
@@ -60,6 +87,7 @@ const isGreeting = ref<boolean>(true);
 const isAnswersVisible = ref<boolean>(false);
 const isCorrectAnswer = ref<boolean>(false);
 const isWrongAnswer = ref<boolean>(false);
+const isInputPanelClosing = ref<boolean>(false);
 
 const unsolvedExamples = computed(() => {
   return examplesList.value?.filter(
@@ -110,6 +138,13 @@ const letsGo = () => {
   showMessages();
 };
 
+const closeInputPanel = () => {
+  isInputPanelClosing.value = true;
+  setTimeout(() => {
+    isInputPanelClosing.value = false;
+  }, 4000);
+};
+
 const giveAnswer = (answer: number) => {
   if (unsolvedExamples.value && unsolvedExamples.value[0].rightAnswer == answer) {
     userStore.addScores(5);
@@ -124,6 +159,7 @@ const giveAnswer = (answer: number) => {
     userStore.addScores(-5);
     isWrongAnswer.value = true;
   }
+  closeInputPanel();
 };
 
 const solveExample = async () => {
@@ -166,10 +202,51 @@ const solveExample = async () => {
 </script>
 
 <style scoped>
+.chat-container {
+  transition: height ease 0.3s;
+}
+.chat-container__width-answers {
+  height: 50dvh;
+}
+
+.input-panel {
+  position: fixed;
+  width: 100vw;
+  background: #ffffff;
+  bottom: 0;
+  left: 0;
+  padding: 10px 20px 50px;
+  box-sizing: border-box;
+  transform: translateY(100%);
+  animation: rise 0.3s forwards;
+}
+.input-panel__vanish {
+  transform: translateY(0);
+  animation: vanish 0.3s forwards;
+}
+
 .answers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, auto);
   gap: 16px;
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes vanish {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
 }
 </style>

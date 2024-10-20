@@ -4,6 +4,8 @@
 body {
   background: rgb(221, 246, 250);
   margin: 0;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 #app {
@@ -15,6 +17,7 @@ body {
   display: flex;
   justify-content: center;
   font-family:'Courier New', Courier, monospace;
+  height: 100%;
 }
 
 a {

@@ -1,17 +1,14 @@
 <template>
-  <!-- Используем v-if для управления видимостью попапа -->
-  <transition name="fade">
-    <div
-      v-if="state"
-      class="overlay"
-      :style="{ background: `${background}` }"
-      @click.self="closePopup"
-    >
-      <SimpleCard>
-        <slot></slot>
-      </SimpleCard>
-    </div>
-  </transition>
+  <div
+    v-if="state"
+    class="overlay"
+    :style="{ background: `${background}` }"
+    @click.self="closePopup"
+  >
+    <SimpleCard>
+      <slot></slot>
+    </SimpleCard>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -45,7 +42,7 @@ onMounted(() => {
 
   setTimeout(() => {
     background.value = props.overlayRgba; // Плавное изменение цвета фона
-  }, 10); // Задержка для анимации
+  });
 });
 
 onBeforeUnmount(() => {
@@ -64,18 +61,6 @@ onBeforeUnmount(() => {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0);
-  transition: background 1s ease-in;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 1s ease;
-  /* Плавное изменение прозрачности */
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  /* Начальная и конечная прозрачность */
+  transition: background 0.3s ease-in-out;
 }
 </style>
