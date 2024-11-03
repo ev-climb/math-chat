@@ -25,13 +25,12 @@
     />
   </div>
   <div
-    v-if="isAnswersVisible"
+    v-if="isAnswersVisible && !isShowingMessages"
     :class="isInputPanelClosing ? 'input-panel input-panel__vanish' : 'input-panel'"
   >
     <div class="answers">
       <SimpleButton
-        v-if="unsolvedExamples"
-        v-for="(answer, i) in unsolvedExamples[0].answers"
+        v-for="(answer, i) in answersList"
         :key="i"
         class="m-t-16"
         @click="() => giveAnswer(answer)"
@@ -39,12 +38,6 @@
       >
     </div>
   </div>
-  <!-- <SimplePopup v-if="isCorrectAnswer" v-model:state="isCorrectAnswer" overlayRgba="rgb(72 237 69 / 37%)">
-    Правильный ответ!
-  </SimplePopup>
-  <SimplePopup v-if="isWrongAnswer" v-model:state="isWrongAnswer" overlayRgba="rgb(231 99 99 / 37%)">
-    Попробуй еще разок!
-  </SimplePopup> -->
 </template>
 
 <script setup lang="ts">
@@ -65,7 +58,7 @@ const { userData } = storeToRefs(userStore);
 const examplesStore = useExamplesStore();
 const { fetchExamples } = examplesStore;
 
-const messages = ref<string[]>([
+const greetingMessages = ref<string[]>([
   "Помоги мне решить некоторые примеры",
   "За правильные ответы ты будешь получать очки и новые уровни",
   "Начнем?",
@@ -79,6 +72,7 @@ type Example = {
 };
 
 const examplesList = ref<Example[] | undefined>([]);
+const answersList = ref<number[]>([]);
 
 const isShowingMessages = ref(false);
 const displayedMessages = ref<string[]>([]);
@@ -88,6 +82,7 @@ const isAnswersVisible = ref<boolean>(false);
 const isCorrectAnswer = ref<boolean>(false);
 const isWrongAnswer = ref<boolean>(false);
 const isInputPanelClosing = ref<boolean>(false);
+const currentExampleIndex = ref<number>(0);
 
 const unsolvedExamples = computed(() => {
   return examplesList.value?.filter(
@@ -100,32 +95,61 @@ const showMessages = () => {
   isShowingMessages.value = true;
 
   if (isGreeting.value) {
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < messages.value.length) {
-        displayedMessages.value.push(messages.value[index]);
-        index++;
-      } else {
-        clearInterval(interval);
-        showingButtons.value = true;
-        isShowingMessages.value = false;
-      }
-    }, 2000);
+    showGreeting();
   } else {
     displayedMessages.value = [];
     setTimeout(() => {
-      if (unsolvedExamples.value && unsolvedExamples.value.length > 0) {
-        displayedMessages.value.push(unsolvedExamples.value[0].example);
-        setTimeout(() => {
-          isAnswersVisible.value = true;
-        }, 2000);
-        isShowingMessages.value = false;
-      } else {
-        displayedMessages.value.push("Все примеры решены!");
-        isShowingMessages.value = false;
-      }
+      showRandomExample();
     }, 2000);
   }
+};
+
+const showGreeting = () => {
+  let index = 0;
+  const interval = setInterval(() => {
+    if (index < greetingMessages.value.length) {
+      displayedMessages.value.push(greetingMessages.value[index]);
+      index++;
+    } else {
+      clearInterval(interval);
+      showingButtons.value = true;
+      isShowingMessages.value = false;
+    }
+  }, 2000);
+};
+
+const showRandomExample = () => {
+  if (unsolvedExamples.value && unsolvedExamples.value.length) {
+    currentExampleIndex.value = Math.floor(Math.random() * unsolvedExamples.value.length);
+
+    displayedMessages.value.push(
+      unsolvedExamples.value[currentExampleIndex.value].example
+    );
+    setTimeout(() => {
+      showAnswers();
+    }, 2000);
+    setTimeout(() => {
+      isShowingMessages.value = false;
+    }, 2000);
+  } else {
+    showMessage(["Все примеры решены!"]);
+    isShowingMessages.value = false;
+  }
+};
+
+const showMessage = async (textList: string[]) => {
+  for (const [index, text] of textList.entries()) {
+    setTimeout(() => {
+      displayedMessages.value.push(text);
+    }, index * 2000);
+  }
+};
+
+const showAnswers = () => {
+  if (unsolvedExamples.value) {
+    answersList.value = unsolvedExamples.value[currentExampleIndex.value].answers;
+  }
+  isAnswersVisible.value = true;
 };
 
 onMounted(async () => {
@@ -142,22 +166,34 @@ const closeInputPanel = () => {
   isInputPanelClosing.value = true;
   setTimeout(() => {
     isInputPanelClosing.value = false;
-  }, 4000);
+  }, 6000);
+};
+
+const rightAnswer = async () => {
+  if (!isInputPanelClosing.value) {
+    userStore.addScores(1);
+    solveExample();
+    await showMessage(["Отличный ответ!", "Продолжай в том же духе!:)"]);
+    setTimeout(() => showMessages(), 6000);
+  }
+};
+
+const wrongAnswer = async () => {
+  if (!isInputPanelClosing.value) {
+    userStore.addScores(-1);
+    await showMessage(["Это было близко!", "Попробуй другой пример:)"]);
+    setTimeout(() => showMessages(), 6000);
+  }
 };
 
 const giveAnswer = (answer: number) => {
-  if (unsolvedExamples.value && unsolvedExamples.value[0].rightAnswer == answer) {
-    userStore.addScores(5);
-    isCorrectAnswer.value = true;
-    setTimeout(() => {
-      isCorrectAnswer.value = false;
-      isAnswersVisible.value = false;
-      solveExample();
-      showMessages();
-    }, 2000);
+  if (
+    unsolvedExamples.value &&
+    unsolvedExamples.value[currentExampleIndex.value].rightAnswer === answer
+  ) {
+    rightAnswer();
   } else {
-    userStore.addScores(-5);
-    isWrongAnswer.value = true;
+    wrongAnswer();
   }
   closeInputPanel();
 };
@@ -176,7 +212,9 @@ const solveExample = async () => {
 
     if (userDoc.exists()) {
       const currentData = userDoc.data();
-      const solvedExamples = currentData.solved_examples || [];
+      let solvedExamples = currentData.solved_examples || [];
+
+      if (unsolvedExamples.value?.length <= 1) solvedExamples = [];
 
       if (!solvedExamples.includes(currentExampleId)) {
         solvedExamples.push(currentExampleId);
@@ -188,7 +226,6 @@ const solveExample = async () => {
         examplesList.value = examplesList.value?.filter(
           (example) => example.id !== currentExampleId
         );
-        showMessages();
       } else {
         console.log(`Example ${currentExampleId} has already been solved.`);
       }
