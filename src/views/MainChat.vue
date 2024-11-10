@@ -33,6 +33,10 @@
         v-for="(answer, i) in answersList"
         :key="i"
         class="m-t-16"
+        :class="{
+          'red-btn': isWrongAnswer && selectedAnswer === answer,
+          'green-btn': isCorrectAnswer && selectedAnswer === answer,
+        }"
         @click="() => giveAnswer(answer)"
         >{{ answer }}</SimpleButton
       >
@@ -83,6 +87,7 @@ const isCorrectAnswer = ref<boolean>(false);
 const isWrongAnswer = ref<boolean>(false);
 const isInputPanelClosing = ref<boolean>(false);
 const currentExampleIndex = ref<number>(0);
+const selectedAnswer = ref<number | null>(null);
 
 const unsolvedExamples = computed(() => {
   return examplesList.value?.filter(
@@ -171,22 +176,31 @@ const closeInputPanel = () => {
 
 const rightAnswer = async () => {
   if (!isInputPanelClosing.value) {
+    isCorrectAnswer.value = true;
     userStore.addScores(1);
     solveExample();
     await showMessage(["Отличный ответ!", "Продолжай в том же духе!:)"]);
-    setTimeout(() => showMessages(), 6000);
+    setTimeout(() => {
+      isCorrectAnswer.value = false;
+      showMessages();
+    }, 6000);
   }
 };
 
 const wrongAnswer = async () => {
   if (!isInputPanelClosing.value) {
+    isWrongAnswer.value = true;
     userStore.addScores(-1);
     await showMessage(["Это было близко!", "Попробуй другой пример:)"]);
-    setTimeout(() => showMessages(), 6000);
+    setTimeout(() => {
+      isWrongAnswer.value = false;
+      showMessages();
+    }, 6000);
   }
 };
 
 const giveAnswer = (answer: number) => {
+  selectedAnswer.value = answer;
   if (
     unsolvedExamples.value &&
     unsolvedExamples.value[currentExampleIndex.value].rightAnswer === answer
@@ -240,7 +254,7 @@ const solveExample = async () => {
 
 <style scoped>
 .chat-container {
-  transition: height ease 0.3s;
+  transition: height ease 0.6s;
 }
 .chat-container__width-answers {
   height: 50dvh;
@@ -255,11 +269,11 @@ const solveExample = async () => {
   padding: 10px 20px 50px;
   box-sizing: border-box;
   transform: translateY(100%);
-  animation: rise 0.3s forwards;
+  animation: rise 0.6s forwards;
 }
 .input-panel__vanish {
   transform: translateY(0);
-  animation: vanish 0.3s forwards;
+  animation: vanish 0.6s forwards;
 }
 
 .answers {
@@ -267,6 +281,14 @@ const solveExample = async () => {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, auto);
   gap: 16px;
+}
+
+.red-btn {
+  background-color: red;
+}
+
+.green-btn {
+  background-color: green;
 }
 
 @keyframes rise {
